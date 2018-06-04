@@ -542,6 +542,7 @@ class StreamDecryptor(_EncryptionStream):
         .. note::
             If source_length is not provided and read() is called, will attempt to seek()
             to the end of the stream and tell() to find the length of source data.
+    :param dict encryption_context: Dictionary defining encryption context
     :param int line_length: Line length to use for reading "lines" from stream (optional)
 
         .. note::
@@ -554,6 +555,10 @@ class StreamDecryptor(_EncryptionStream):
 
     def __init__(self, **kwargs):
         self.last_sequence_number = 0
+        self.encryption_context = (
+            kwargs['encryption_context'] if 'encryption_context' in kwargs
+            else None
+        )
 
     def _prep_message(self):
         """Performs initial message setup."""
@@ -571,7 +576,10 @@ class StreamDecryptor(_EncryptionStream):
         :raises CustomMaximumValueExceeded: if frame length is greater than the custom max value
         """
         header_start = self.source_stream.tell()
-        header = aws_encryption_sdk.internal.formatting.deserialize.deserialize_header(self.source_stream)
+        header = aws_encryption_sdk.internal.formatting.deserialize.deserialize_header(
+            self.source_stream,
+            encryption_context=self.encryption_context
+        )
 
         if (
             self.config.max_body_length is not None

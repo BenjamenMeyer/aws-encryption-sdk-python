@@ -82,10 +82,11 @@ def validate_header(header, header_auth, stream, header_start, header_end, data_
     stream.seek(current_position)
 
 
-def deserialize_header(stream):
+def deserialize_header(stream, encryption_context=None):
     """Deserializes the header from a source stream
 
     :param stream: Source data stream
+    :param dict encryption_context: Dictionary defining encryption context
     :type stream: io.BytesIO
     :returns: Deserialized MessageHeader object
     :rtype: aws_encryption_sdk.structure.MessageHeader
@@ -119,9 +120,15 @@ def deserialize_header(stream):
     header['algorithm'] = alg
     header['message_id'] = message_id
 
-    header['encryption_context'] = deserialize_encryption_context(
+    if encryption_context is None:
+        header['encryption_context'] = deserialize_encryption_context(
+            stream.read(ser_encryption_context_length)
+        )
+    else:
+        header['encryption_context'] = encryption_context
+        # toss out the encryption context from the stream
         stream.read(ser_encryption_context_length)
-    )
+
     (encrypted_data_key_count,) = unpack_values('>H', stream)
 
     encrypted_data_keys = set([])

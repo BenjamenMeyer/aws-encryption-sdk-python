@@ -87,6 +87,7 @@ def decrypt(**kwargs):
         .. note::
             The concept of "lines" is used to match Python file-like-object terminology.  In this
             context it defines the number of bytes returned by readline().
+    :param dict encryption_context: Dictionary defining encryption context
     :param int max_body_length: Maximum frame size (or content length for non-framed messages)
     in bytes to read from ciphertext message.
     :returns: Tuple containing the decrypted plaintext and the message header object
